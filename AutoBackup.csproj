@@ -4,8 +4,24 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net5.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
-    <ApplicationIcon>backup.ico</ApplicationIcon>
+    <AppConfig>App.$(Configuration).config</AppConfig>
+    <SignAssembly>False</SignAssembly>
+    <PackageIcon>restore.png</PackageIcon>
+    <Company>Q_FOCUS</Company>
+    <ApplicationIcon>restore.ico</ApplicationIcon>
+    <Authors>Q_FOCUS</Authors>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="restore.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="C:\Users\rqu\Downloads\restore.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Data.Sqlite" Version="5.0.11" />
@@ -13,7 +29,7 @@
 
   <ItemGroup>
     <None Update="files.db">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 

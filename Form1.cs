@@ -91,7 +91,8 @@ namespace AutoBackup
         private void OnDeleted(object sender, FileSystemEventArgs e)
         {
             handler.Delete(e.Name);
-            AddLog("----------" + e.Name + " is delete!!----------");
+            AddLog("----------" + e.Name + " is deleted!!----------");
+            notifyIcon.ShowBalloonTip(1000, "File is Deleted", e.Name + " is deleted!", ToolTipIcon.Error);
         }
 
         private void OnRenamed(object sender, RenamedEventArgs e)
@@ -159,7 +160,11 @@ namespace AutoBackup
                     {
                         Status status = handler.Add(name);
 
-                        AddLog(String.Format("File {0} is {1}", name, status.ToString()));
+                        String text = String.Format("File '{0}' is {1}", name, status.ToString());
+                        AddLog(text);
+
+                        notifyIcon.ShowBalloonTip(1000, status.ToString(), text, ToolTipIcon.Info);
+
                     }
                 }
             }
@@ -176,6 +181,22 @@ namespace AutoBackup
             {
                 log.Items.Add(text);
             }
+        }
+
+        private void BaseForm_Resize(object sender, EventArgs e)
+        {
+            if (this.WindowState == FormWindowState.Minimized)
+            {
+                Hide();
+                notifyIcon.Visible = true;
+            }
+        }
+
+        private void NotifyIcon_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            Show();
+            this.WindowState = FormWindowState.Normal;
+            notifyIcon.Visible = false;
         }
     }
 }

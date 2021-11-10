@@ -27,13 +27,12 @@ namespace AutoBackup
             FileInfo fileInfo = new FileInfo(Path.Combine(this.source, name));
             if (sourceFile == null)
             {
-                Add(fileInfo);
+                return Add(fileInfo);
             }
             else
             {
-                Update(fileInfo);
+                return Update(fileInfo);
             }
-            return sourceFile.Status;
         }
 
         public void Delete(String name)
@@ -132,18 +131,22 @@ namespace AutoBackup
 
         }
 
-        private void Add(FileInfo file)
+        private Status Add(FileInfo file)
         {
             FileModel model = OperateFile(file);
 
             this.provider.Add(model);
+
+            return model.Status;
         }
 
-        private void Update(FileInfo file)
+        private Status Update(FileInfo file)
         {
             FileModel model = OperateFile(file);
 
             this.provider.Update(model);
+
+            return model.Status;
         }
 
         private FileModel OperateFile(FileInfo file)
