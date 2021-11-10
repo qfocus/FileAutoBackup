@@ -23,31 +23,26 @@ namespace AutoBackup
 
         public Status Add(String name)
         {
-            SourceFile sourceFile = provider.Get(name);
+            FileModel sourceFile = provider.Get(name);
+            FileInfo fileInfo = new FileInfo(Path.Combine(this.source, name));
             if (sourceFile == null)
             {
-                sourceFile = new SourceFile
-                {
-                    Name = name,
-                    LastModifiedTime = File.GetLastWriteTime(Path.Combine(this.source, name))
-                };
-
-                Add(sourceFile);
+                Add(fileInfo);
             }
             else
             {
-                Update(sourceFile);
+                Update(fileInfo);
             }
             return sourceFile.Status;
         }
 
         public void Delete(String name)
         {
-            SourceFile file = provider.Get(name);
+            FileModel file = provider.Get(name);
 
-            if (file.Status == Status.Failed)
+            if (file.Status == Status.CopyFailed)
             {
-                file.Status = Status.Missing;
+                file.Status = Status.SourceMissing;
             }
             else
             {
@@ -68,7 +63,7 @@ namespace AutoBackup
             {
                 string name = Path.GetFileName(item);
                 FileInfo file = new FileInfo(item);
-                SourceFile source;
+                FileModel source;
 
                 // the file is old
                 if (stored.TryGetValue(name, out source))
@@ -79,35 +74,26 @@ namespace AutoBackup
                         stored.Remove(name);
                         continue;
                     }
-                    // file is updated
-                    source.LastModifiedTime = file.LastWriteTime;
-
-                    Update(source);
+                    // file is updated               
+                    Update(file);
 
                     stored.Remove(name);
                     continue;
                 }
-                // the file is new
-                source = new SourceFile
-                {
-                    LastModifiedTime = file.LastWriteTime,
-                    Name = name
-                };
-
-                Add(source);
+                Add(file);
             }
 
             // File is deleted
             foreach (var item in stored)
             {
-                SourceFile file = item.Value;
+                FileModel file = item.Value;
                 if (file.Status == Status.Copied)
                 {
                     file.Status = Status.Deleted;
                 }
-                else if (file.Status == Status.Failed)
+                else if (file.Status == Status.CopyFailed)
                 {
-                    file.Status = Status.Missing;
+                    file.Status = Status.SourceMissing;
                 }
                 else
                 {
@@ -117,37 +103,66 @@ namespace AutoBackup
             }
         }
 
-        private void CopyFile(SourceFile source)
+        private Status CopyFile(FileInfo fileInfo)
         {
             try
             {
-                File.Copy(Path.Combine(this.source, source.Name), Path.Combine(this.target, source.Name), true);
-                source.Status = Status.Copied;
+                File.Copy(fileInfo.FullName, Path.Combine(this.target, fileInfo.Name), true);
+                return Status.Copied;
             }
             catch (IOException ex)
             {
-                source.Status = Status.Failed;
+                return Status.CopyFailed;
             }
         }
 
-        private void Add(SourceFile source)
+        private Status DecryptNCM(FileInfo file)
         {
-            if (!File.Exists(Path.Combine(this.source, source.Name)))
+            try
             {
-                return;
+                NeteaseCrypto netease = new NeteaseCrypto(file);
+                netease.Dump(this.target);
+
+                return Status.Copied;
             }
-            CopyFile(source);
+            catch (IOException ex)
+            {
+                return Status.ConvertFailed;
+            }
 
-            this.provider.Add(source);
         }
 
-        private void Update(SourceFile source)
+        private void Add(FileInfo file)
         {
-            CopyFile(source);
+            FileModel model = OperateFile(file);
 
-            this.provider.Update(source);
+            this.provider.Add(model);
         }
 
+        private void Update(FileInfo file)
+        {
+            FileModel model = OperateFile(file);
 
+            this.provider.Update(model);
+        }
+
+        private FileModel OperateFile(FileInfo file)
+        {
+            Status status;
+            if (Path.GetExtension(file.FullName) == ".ncm")
+            {
+                status = DecryptNCM(file);
+            }
+            else
+            {
+                status = CopyFile(file);
+            }
+
+            FileModel model = new FileModel();
+            model.Name = file.Name;
+            model.LastModifiedTime = file.LastWriteTime;
+            model.Status = status;
+            return model;
+        }
     }
 }

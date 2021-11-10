@@ -4,7 +4,7 @@ using System.Text;
 
 namespace AutoBackup
 {
-    public class SourceFile
+    public class FileModel
     {
         public long Id { get; set; }
         public String Name { get; set; }

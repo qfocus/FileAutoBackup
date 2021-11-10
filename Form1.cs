@@ -105,16 +105,14 @@ namespace AutoBackup
             }
         }
 
-        private void OnError(object sender, ErrorEventArgs e) =>
-            PrintException(e.GetException());
-
-        private void PrintException(Exception? ex)
+        private void OnError(object sender, ErrorEventArgs ex)
         {
             if (ex != null)
             {
-                AddLog(ex.Message);
+                AddLog(ex.GetException().Message);
             }
         }
+
 
         private void Startup()
         {
@@ -127,7 +125,7 @@ namespace AutoBackup
                 !Directory.Exists(destination))
             {
                 string message = "Configuration is not properly set. Please modify and restart this program!";
-                MessageBox.Show(message, "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);              
+                MessageBox.Show(message, "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             else
             {

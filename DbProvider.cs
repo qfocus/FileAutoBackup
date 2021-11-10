@@ -28,7 +28,7 @@ namespace AutoBackup
             this.conn = new SqliteConnection("Data Source=files.db");
         }
 
-        public SourceFile Get(string name)
+        public FileModel Get(string name)
         {
             this.conn.Open();
 
@@ -38,7 +38,7 @@ namespace AutoBackup
 
             SqliteDataReader reader = command.ExecuteReader();
 
-            SourceFile file = null;
+            FileModel file = null;
 
             while (reader.Read())
             {
@@ -46,7 +46,7 @@ namespace AutoBackup
 
                 Status status = (Status)reader.GetInt32(2);
                 DateTime lastModified = reader.GetDateTime(3);
-                file = new SourceFile
+                file = new FileModel
                 {
                     Id = id,
                     Name = reader.GetString(1),
@@ -62,9 +62,9 @@ namespace AutoBackup
         }
 
 
-        public void Add(SourceFile source)
+        public void Add(FileModel source)
         {
-            List<SourceFile> files = new List<SourceFile>
+            List<FileModel> files = new List<FileModel>
             {
                 source
             };
@@ -72,7 +72,7 @@ namespace AutoBackup
             Add(files);
         }
 
-        public void Add(List<SourceFile> files)
+        public void Add(List<FileModel> files)
         {
             this.conn.Open();
 
@@ -90,9 +90,9 @@ namespace AutoBackup
             this.conn.Close();
         }
 
-        public Dictionary<String, SourceFile> Getall()
+        public Dictionary<String, FileModel> Getall()
         {
-            Dictionary<String, SourceFile> result = new Dictionary<string, SourceFile>();
+            Dictionary<String, FileModel> result = new Dictionary<string, FileModel>();
 
             this.conn.Open();
 
@@ -107,7 +107,7 @@ namespace AutoBackup
                 string name = reader.GetString(1);
                 Status status = (Status)reader.GetInt32(2);
                 DateTime lastModified = reader.GetDateTime(3);
-                SourceFile file = new SourceFile
+                FileModel file = new FileModel
                 {
                     Id = id,
                     Name = name,
@@ -122,7 +122,7 @@ namespace AutoBackup
             return result;
         }
 
-        public void Update(SourceFile source)
+        public void Update(FileModel source)
         {
             this.conn.Open();
 
