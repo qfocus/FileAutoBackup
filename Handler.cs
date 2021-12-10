@@ -25,6 +25,7 @@ namespace AutoBackup
         {
             FileModel sourceFile = provider.Get(name);
             FileInfo fileInfo = new FileInfo(Path.Combine(this.source, name));
+
             if (sourceFile == null)
             {
                 return Add(fileInfo);
@@ -119,7 +120,7 @@ namespace AutoBackup
         {
             try
             {
-                NeteaseCrypto netease = new NeteaseCrypto(file);
+                NeteaseCrypto netease = new(file);
                 netease.Dump(this.target);
 
                 return Status.Copied;
@@ -129,6 +130,21 @@ namespace AutoBackup
                 return Status.ConvertFailed;
             }
 
+        }
+
+        private Status DecryptQQ(FileInfo info)
+        {
+            try
+            {
+                QQCrypto qqCrypto = new(info);
+                qqCrypto.Dump(this.target);
+
+                return Status.Copied;
+            }
+            catch (IOException ex)
+            {
+                return Status.ConvertFailed;
+            }
         }
 
         private Status Add(FileInfo file)
@@ -152,13 +168,22 @@ namespace AutoBackup
         private FileModel OperateFile(FileInfo file)
         {
             Status status;
-            if (Path.GetExtension(file.FullName) == ".ncm")
+            String ext = Path.GetExtension(file.FullName);
+
+            switch (ext)
             {
-                status = DecryptNCM(file);
-            }
-            else
-            {
-                status = CopyFile(file);
+                case ".qmcflac":
+                case ".mflac":
+                case ".qmc0":
+                case ".qmc3":
+                    status = DecryptQQ(file);
+                    break;
+                case ".ncm":
+                    status = DecryptNCM(file);
+                    break;
+                default:
+                    status = CopyFile(file);
+                    break;
             }
 
             FileModel model = new FileModel();

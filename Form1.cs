@@ -1,16 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Configuration;
-using System.Data;
-using System.Diagnostics;
-using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace AutoBackup
@@ -90,9 +82,16 @@ namespace AutoBackup
 
         private void OnDeleted(object sender, FileSystemEventArgs e)
         {
-            handler.Delete(e.Name);
-            AddLog("----------" + e.Name + " is deleted!!----------");
-            notifyIcon.ShowBalloonTip(1000, "File is Deleted", e.Name + " is deleted!", ToolTipIcon.Error);
+            try
+            {
+                handler.Delete(e.Name);
+                AddLog("----------" + e.Name + " is deleted!!----------");
+                notifyIcon.ShowBalloonTip(1000, "File is Deleted", e.Name + " is deleted!", ToolTipIcon.Error);
+            }
+            catch (Exception ex)
+            {
+                notifyIcon.ShowBalloonTip(1000, "System Error!!", ex.Message, ToolTipIcon.Error);
+            }
         }
 
         private void OnRenamed(object sender, RenamedEventArgs e)
@@ -158,13 +157,26 @@ namespace AutoBackup
                 {
                     if (this.queue.TryDequeue(out string name))
                     {
-                        Status status = handler.Add(name);
+                        try
+                        {
+                            if (File.GetAttributes(Path.Combine(this.txtSource.Text, name)) == FileAttributes.Directory)
+                            {
+                                continue;
+                            }
 
-                        String text = String.Format("File '{0}' is {1}", name, status.ToString());
-                        AddLog(text);
 
-                        notifyIcon.ShowBalloonTip(1000, status.ToString(), text, ToolTipIcon.Info);
+                            Status status = handler.Add(name);
 
+                            String text = String.Format("File '{0}' is {1}", name, status.ToString());
+                            AddLog(text);
+
+                            notifyIcon.ShowBalloonTip(1000, status.ToString(), text, ToolTipIcon.Info);
+                        }
+                        catch (Exception ex)
+                        {
+                            notifyIcon.ShowBalloonTip(1000, "System Error!!", ex.Message, ToolTipIcon.Error);
+
+                        }
                     }
                 }
             }

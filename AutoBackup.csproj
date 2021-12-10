@@ -10,17 +10,11 @@
     <Company>Q_FOCUS</Company>
     <ApplicationIcon>restore.ico</ApplicationIcon>
     <Authors>Q_FOCUS</Authors>
+    <DebugType>full</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
     <Content Include="restore.ico" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="C:\Users\rqu\Downloads\restore.png">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
   </ItemGroup>
 
   <ItemGroup>
@@ -29,7 +23,11 @@
 
   <ItemGroup>
     <None Update="files.db">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="restore.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
     </None>
   </ItemGroup>
 
